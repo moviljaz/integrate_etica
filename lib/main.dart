@@ -42,24 +42,22 @@ class _JazteaHomePageState extends State<JazteaHomePage> {
     super.dispose();
   }
 
-  // Función para abrir WhatsApp - Mejorada para web
+  // Función para abrir WhatsApp - Detecta móvil/escritorio automáticamente
   Future<void> _launchWhatsApp() async {
     const phoneNumber = '3327448418';
     
     try {
-      if (kIsWeb) {
-        // Para web, usar WhatsApp Web
-        final Uri whatsappUri = Uri.parse('https://web.whatsapp.com/send?phone=$phoneNumber');
-        await launchUrl(whatsappUri, mode: LaunchMode.platformDefault);
+      // Usar wa.me que automáticamente redirige a la app en móvil o web en escritorio
+      final Uri whatsappUri = Uri.parse('https://wa.me/$phoneNumber');
+      
+      if (await canLaunchUrl(whatsappUri)) {
+        await launchUrl(
+          whatsappUri, 
+          mode: kIsWeb ? LaunchMode.platformDefault : LaunchMode.externalApplication
+        );
       } else {
-        // Para móvil, usar la aplicación de WhatsApp
-        final Uri whatsappUri = Uri.parse('https://wa.me/$phoneNumber');
-        if (await canLaunchUrl(whatsappUri)) {
-          await launchUrl(whatsappUri, mode: LaunchMode.externalApplication);
-        } else {
-          // Fallback a marcador telefónico
-          await _launchPhone(phoneNumber);
-        }
+        // Fallback a marcador telefónico
+        await _launchPhone(phoneNumber);
       }
     } catch (e) {
       if (kDebugMode) {
